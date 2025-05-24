@@ -1,0 +1,52 @@
+export default class StoryView {
+  constructor() {
+    this.storyList = document.createElement("div");
+    this.storyList.className = "story-list";
+  }
+
+  showLoading() {
+    this.storyList.innerHTML = `
+      <div class="loading-state" aria-live="polite">
+        <div class="loading-spinner"></div>
+        <p>Loading stories...</p>
+      </div>
+    `;
+  }
+
+  displayStories(stories) {
+    this.storyList.innerHTML = stories
+      .map(
+        (story) => `
+      <article class="story-card">
+      <img src="${story.photoUrl}"
+      alt="${story.description || "Story image"}"
+      class="story-image"
+      loading="lazy">
+      <div class="story-content">
+       <h3>${story.name}</h3>
+          <p>${story.description}</p>
+          <time datetime="${new Date(story.createdAt).toISOString()}">
+            ${new Date(story.createdAt).toLocaleDateString()}
+          </time>
+        </div>
+      </article>
+      `
+      )
+      .join("");
+  }
+
+  showError(error) {
+    this.storyList.innerHTML = `
+      <div class="error-state" role="alert">
+        <i class="fas fa-exclamation-triangle"></i>
+        <h2>${error.status === 401 ? "Authentication Required" : "Error"}</h2>
+        <p>${error.message || "Failed to load stories"}</p>
+        ${
+          error.status === 401
+            ? '<a href="#/login" class="btn btn-primary">Login</a>'
+            : '<button id="retry-btn" class="btn btn-primary">Retry</button>'
+        }
+      </div>
+    `;
+  }
+}
