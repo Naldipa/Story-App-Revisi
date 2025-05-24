@@ -4,6 +4,37 @@ export default class StoryView {
     this.storyList.className = "story-list";
   }
 
+  initializeStoryMaps() {
+    const mapElements = this.storyList.querySelectorAll('[id^="map-"]');
+
+    mapElements.forEach((mapEl) => {
+      const lat = parseFloat(mapEl.dataset.lat);
+      const lon = parseFloat(mapEl.dataset.lon);
+      const name = mapEl.dataset.name;
+      const description = mapEl.dataset.description;
+
+      if (!isNaN(lat) && !isNaN(lon) && typeof L !== "undefined") {
+        const storyMap = L.map(mapEl, {
+          zoomControl: false,
+          dragging: false,
+          scrollWheelZoom: false,
+        }).setView([lat, lon], 13);
+
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(
+          storyMap
+        );
+        L.marker([lat, lon])
+          .addTo(storyMap)
+          .bindPopup(`<b>${name}</b><br>${description}`)
+          .openPopup();
+      }
+    });
+  }
+
+  getElement() {
+    return this.storyList;
+  }
+
   showLoading() {
     this.storyList.innerHTML = `
       <div class="loading-state" aria-live="polite">
@@ -17,19 +48,27 @@ export default class StoryView {
     this.storyList.innerHTML = stories
       .map(
         (story) => `
-      <article class="story-card">
-      <img src="${story.photoUrl}"
-      alt="${story.description || "Story image"}"
-      class="story-image"
-      loading="lazy">
-      <div class="story-content">
-       <h3>${story.name}</h3>
-          <p>${story.description}</p>
-          <time datetime="${new Date(story.createdAt).toISOString()}">
-            ${new Date(story.createdAt).toLocaleDateString()}
-          </time>
-        </div>
-      </article>
+        <article class="story-card">
+          <img src="${story.photoUrl}"
+               alt="${story.description || "Story image"}"
+               class="story-image"
+               loading="lazy">
+          <div class="story-content">
+            <h3>${story.name}</h3>
+            <p>${story.description}</p>
+            <time datetime="${new Date(story.createdAt).toISOString()}">
+              ${new Date(story.createdAt).toLocaleDateString()}
+            </time>
+            <div 
+              id="map-${story.id}" 
+              class="story-map" 
+              data-lat="${story.lat}" 
+              data-lon="${story.lon}" 
+              data-name="${story.name}" 
+              data-description="${story.description}">
+            </div>
+          </div>
+        </article>
       `
       )
       .join("");

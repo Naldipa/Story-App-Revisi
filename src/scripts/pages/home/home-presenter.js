@@ -2,6 +2,11 @@ export default class HomePresenter {
   constructor({ view, model }) {
     this.view = view;
     this.model = model;
+    this.isLoading = false;
+
+    // Bind view handlers
+    this.view.setRetryHandler(() => this.loadStories());
+    this.view.setNavigationHandler((route) => this.handleNavigation(route));
   }
 
   async initialize() {
@@ -18,35 +23,19 @@ export default class HomePresenter {
       this.view.showLoading();
       const stories = await this.model.getAllStories({ page: 1, size: 10 });
       this.view.displayStories(stories);
-
-      await this.initMainMap(stories);
+      await this.view.initMainMap(stories);
     } catch (error) {
       if (error.message.toLowerCase().includes("authentication")) {
-        window.location.hash = "#/login";
+        this.view.navigateTo("/login");
       } else {
         this.view.showError(error.message);
       }
+    } finally {
+      this.isLoading = false;
     }
   }
-
-  async initMainMap(stories) {
-    try {
-      const Map = (await import("../../utils/map")).default;
-      this.mainMap = await Map.build("#main-map", { zoom: 5 });
-
-      // Tambahkan marker untuk setiap story
-      stories.forEach((story) => {
-        if (story.lat && story.lon) {
-          this.mainMap.addMarker([story.lat, story.lon], {
-            popup: {
-              content: `<b>${story.name}</b><br>${story.description}`,
-              className: "story-popup",
-            },
-          });
-        }
-      });
-    } catch (error) {
-      console.error("Failed to initialize main map:", error);
-    }
+  handleNavigation(route) {
+    // Additional navigation logic can be added here if needed
+    this.view.navigateTo(route);
   }
 }

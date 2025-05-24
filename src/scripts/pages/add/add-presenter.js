@@ -9,6 +9,24 @@ export default class AddStoryPresenter {
     this.map = null;
     this.currentMarker = null;
     this.isSubmitting = false;
+
+    this.view.setNavigationHandler((route) => this.handleNavigation(route));
+  }
+
+  async handleNavigation(route) {
+    this.cleanup();
+    this.view.navigateTo(route);
+  }
+
+  async initialize() {
+    try {
+      await this.initCamera();
+      await this.initMap();
+      this.bindEventHandlers();
+    } catch (error) {
+      console.error("AddStoryPresenter initialization failed:", error);
+      this.view.showError("Failed to initialize page features");
+    }
   }
 
   async initCamera() {
@@ -26,12 +44,6 @@ export default class AddStoryPresenter {
       );
       throw error;
     }
-  }
-
-  cleanup() {
-    this.camera?.stop();
-    this.map = null;
-    this.currentMarker = null;
   }
 
   async initMap() {
@@ -108,7 +120,7 @@ export default class AddStoryPresenter {
       await transitionHelper({
         updateDOM: () => {
           this.view.showSuccess("Story added successfully!");
-          window.location.hash = "#/";
+          this.view.navigateToHome();
         },
       });
     } catch (error) {
@@ -117,18 +129,22 @@ export default class AddStoryPresenter {
     } finally {
       this.isSubmitting = false;
       this.view.showLoading(false);
-      this.camera?.stop();
     }
   }
 
-  bindFormSubmit() {
-    this.view.bindFormSubmitHandler(async (formData) => {
-      await this.handleFormSubmit(formData);
-    });
-
+  bindEventHandlers() {
+    this.view.bindFormSubmitHandler((formData) =>
+      this.handleFormSubmit(formData)
+    );
     this.view.bindCancelHandler(() => {
-      this.camera?.stop();
-      window.location.hash = "#/";
+      this.cleanup();
+      this.view.navigateToHome();
     });
+  }
+
+  cleanup() {
+    this.camera?.stop();
+    this.map?.remove();
+    this.currentMarker = null;
   }
 }

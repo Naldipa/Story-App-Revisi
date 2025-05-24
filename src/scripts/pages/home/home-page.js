@@ -17,13 +17,7 @@ export default class HomePage {
   }
 
   async afterRender() {
+    this.view.setRetryHandler(() => this.presenter.loadStories());
     await this.presenter.initialize();
-
-    //Pasang handler untuk tombol Retry
-    document.addEventListener("click", async (e) => {
-      if (e.target && e.target.id === "retry-btn") {
-        await this.presenter.loadStories();
-      }
-    });
   }
 }

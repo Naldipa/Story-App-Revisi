@@ -1,4 +1,8 @@
 export default class HomeView {
+  constructor() {
+    this.onRetry = null;
+    this.onNavigate = null;
+  }
   getTemplate() {
     return `
       <section class="home-page" aria-labelledby="homepage-title">
@@ -7,6 +11,18 @@ export default class HomeView {
         <div class="story-list-container"></div>
       </section>
     `;
+  }
+
+  setRetryHandler(handler) {
+    this.onRetry = handler;
+  }
+
+  setNavigationHandler(handler) {
+    this.onNavigate = handler;
+  }
+
+  navigateTo(route) {
+    window.location.hash = `#${route}`;
   }
 
   getStoryListContainer() {
@@ -45,6 +61,29 @@ export default class HomeView {
       .join("");
   }
 
+  async initMainMap(stories) {
+    try {
+      const Map = (await import("../../utils/map")).default;
+      const mainMap = await Map.build("#main-map", { zoom: 5 });
+
+      stories.forEach((story) => {
+        if (story.lat && story.lon) {
+          mainMap.addMarker([story.lat, story.lon], {
+            popup: {
+              content: `<b>${story.name}</b><br>${story.description}`,
+              className: "story-popup",
+            },
+          });
+        }
+      });
+
+      return mainMap;
+    } catch (error) {
+      console.error("Failed to initialize main map:", error);
+      return null;
+    }
+  }
+
   showError(error) {
     const container = this.getStoryListContainer();
     container.innerHTML = `
@@ -55,5 +94,17 @@ export default class HomeView {
         <button id="retry-btn" class="btn btn-primary">Retry</button>
       </div>
     `;
+
+    document.getElementById("retry-btn")?.addEventListener("click", () => {
+      this.onRetry?.();
+    });
+  }
+
+  navigateToLogin() {
+    window.location.hash = "#/login";
+  }
+
+  setRetryHandler(handler) {
+    this.onRetry = handler;
   }
 }

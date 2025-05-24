@@ -17,12 +17,13 @@ export default class AddPage {
     try {
       await this.presenter.initCamera();
       await this.presenter.initMap();
-      this.presenter.bindFormSubmit();
+      this.presenter.bindEventHandlers();
     } catch (error) {
       console.error("AddPage initialization failed:", error);
       this.view.showError("Failed to initialize page. Please try again.");
     }
   }
+
   cleanup() {
     return this.presenter.cleanup();
   }

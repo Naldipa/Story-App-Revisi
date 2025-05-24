@@ -1,4 +1,18 @@
 export default class AddStoryView {
+  constructor() {
+    this.onFormSubmit = null;
+    this.onCancel = null;
+    this.onNavigate = null;
+  }
+
+  navigateTo(route) {
+    window.location.hash = `#${route}`;
+  }
+
+  setNavigationHandler(handler) {
+    this.onNavigate = handler;
+  }
+
   getTemplate() {
     return `
       <section class="add-story-page" aria-labelledby="form-title">
@@ -93,7 +107,6 @@ export default class AddStoryView {
     `;
   }
 
-  // DOM element getters
   getCameraPreviewElement() {
     return document.getElementById("camera-preview");
   }
@@ -106,7 +119,6 @@ export default class AddStoryView {
     return "#map";
   }
 
-  // Location methods
   updateLocationInputs(lat, lng) {
     document.getElementById("lat").value = lat;
     document.getElementById("lon").value = lng;
@@ -126,22 +138,29 @@ export default class AddStoryView {
     }
   }
 
-  // Event binding methods
   bindFormSubmitHandler(handler) {
     const form = document.getElementById("story-form");
     if (!form) return;
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      await handler(new FormData(form));
+      if (this.onFormSubmit) {
+        await this.onFormSubmit(new FormData(form));
+      }
     });
+    this.onFormSubmit = handler;
   }
 
   bindCancelHandler(handler) {
     const cancelBtn = document.getElementById("cancel-btn");
     if (cancelBtn) {
-      cancelBtn.addEventListener("click", handler);
+      cancelBtn.addEventListener("click", () => {
+        if (this.onCancel) {
+          this.onCancel();
+        }
+      });
     }
+    this.onCancel = handler;
   }
 
   bindCapturePhotoHandler(captureHandler) {
@@ -160,7 +179,6 @@ export default class AddStoryView {
           const photoBlob = await captureHandler();
           const photoUrl = URL.createObjectURL(photoBlob);
 
-          // Show captured photo
           photoPreview.style.backgroundImage = `url(${photoUrl})`;
           photoPreview.style.display = "block";
           cameraPreview.style.display = "none";
@@ -186,7 +204,6 @@ export default class AddStoryView {
     }
   }
 
-  // UI state methods
   showLoading(show = true) {
     const submitBtn = document.getElementById("submit-btn");
     if (submitBtn) {
@@ -230,5 +247,9 @@ export default class AddStoryView {
       form.prepend(successElement);
       setTimeout(() => successElement.remove(), 3000);
     }
+  }
+
+  navigateToHome() {
+    window.location.hash = "#/";
   }
 }
