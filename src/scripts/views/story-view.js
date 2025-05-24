@@ -5,8 +5,9 @@ export default class StoryView {
   }
 
   initializeStoryMaps() {
+    if (typeof L === "undefined") return;
+    
     const mapElements = this.storyList.querySelectorAll('[id^="map-"]');
-
     mapElements.forEach((mapEl) => {
       const lat = parseFloat(mapEl.dataset.lat);
       const lon = parseFloat(mapEl.dataset.lon);

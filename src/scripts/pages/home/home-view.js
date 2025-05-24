@@ -99,11 +99,6 @@ export default class HomeView {
       this.onRetry?.();
     });
   }
-
-  navigateToLogin() {
-    window.location.hash = "#/login";
-  }
-
   setRetryHandler(handler) {
     this.onRetry = handler;
   }

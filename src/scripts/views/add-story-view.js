@@ -6,7 +6,11 @@ export default class AddStoryView {
   }
 
   navigateTo(route) {
-    window.location.hash = `#${route}`;
+    if (this.onNavigate) {
+      this.onNavigate(route);
+    } else {
+      window.location.hash = `#${route}`;
+    }
   }
 
   setNavigationHandler(handler) {
@@ -248,7 +252,6 @@ export default class AddStoryView {
       setTimeout(() => successElement.remove(), 3000);
     }
   }
-
   navigateToHome() {
     window.location.hash = "#/";
   }

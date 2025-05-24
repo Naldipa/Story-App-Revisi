@@ -28,7 +28,10 @@ export default class HomePresenter {
       if (error.message.toLowerCase().includes("authentication")) {
         this.view.navigateTo("/login");
       } else {
-        this.view.showError(error.message);
+        this.view.showError({
+          message: error.message,
+          type: "NETWORK_ERROR",
+        });
       }
     } finally {
       this.isLoading = false;
