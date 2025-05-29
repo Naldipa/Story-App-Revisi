@@ -1,3 +1,16 @@
+import {
+  generateSubscribeButtonTemplate,
+  generateUnsubscribeButtonTemplate,
+} from "./scripts/utils/templates";
+import {
+  isNotificationAvailable,
+  isNotificationGranted,
+  requestNotificationPermission,
+  isCurrentPushSubscriptionAvailable,
+  subscribe,
+} from "./scripts/utils/notification-helper";
+import CONFIG from "./scripts/config";
+
 import { getRouteConfig } from "./scripts/routes/routes";
 import { getActiveRoute } from "./scripts/routes/url-parser";
 import { transitionHelper } from "./scripts/utils/transition";
@@ -18,6 +31,97 @@ class App {
     this._setupDrawer();
     this._setupNavigation();
     this._setupGlobalErrorHandlers();
+    this._setupPushNotification();
+  }
+
+  async _setupPushNotification() {
+    try {
+      const authButtons = document.getElementById("auth-buttons");
+      if (!authButtons) return;
+
+      if (!isNotificationAvailable()) {
+        console.log("Notification API not supported");
+        return;
+      }
+
+      // Gunakan isNotificationGranted untuk pengecekan
+      const permissionGranted = isNotificationGranted();
+      const isSubscribed = await isCurrentPushSubscriptionAvailable();
+
+      if (isSubscribed && permissionGranted) {
+        authButtons.innerHTML = generateUnsubscribeButtonTemplate();
+      } else {
+        authButtons.innerHTML = generateSubscribeButtonTemplate();
+      }
+
+      authButtons.addEventListener("click", async (e) => {
+        if (
+          e.target.id === "subscribe-button" ||
+          e.target.closest("#subscribe-button")
+        ) {
+          e.preventDefault();
+          await this._handleSubscribe();
+        } else if (
+          e.target.id === "unsubscribe-button" ||
+          e.target.closest("#unsubscribe-button")
+        ) {
+          e.preventDefault();
+          await this._handleUnsubscribe();
+        }
+      });
+    } catch (error) {
+      console.error("Push notification setup failed:", error);
+    }
+  }
+
+  async _handleSubscribe() {
+    try {
+      const permissionGranted = await requestNotificationPermission();
+      if (!permissionGranted) return;
+
+      await subscribe();
+
+      const authButtons = document.getElementById("auth-buttons");
+      authButtons.innerHTML = generateSubscribeButtonTemplate();
+
+      alert("You have successfully subscribed to push notifications!");
+    } catch (erorr) {
+      console.error("Subscription failed:", erorr);
+      this._showErrorState({
+        title: "Subscription Failed",
+        message: error.message,
+        actions: [
+          { text: "Try Again", action: () => this._handleSubscribe() },
+          { text: "Cancel", action: () => {} },
+        ],
+      });
+    }
+  }
+
+  async _handleUnsubscribe() {
+    try {
+      const registration = await navigator.serviceWorker.getRegistration();
+      const subscription = await registration.pushManager.getSubscription();
+
+      if (subscription) {
+        await subscription.unsubscribe();
+
+        const authButtons = document.getElementById("auth-buttons");
+        authButtons.innerHTML = generateSubscribeButtonTemplate();
+
+        alert("You have unsubscribed from push notifications.");
+      }
+    } catch (error) {
+      console.error("Unsubscription failed:", error);
+      this._showErrorState({
+        title: "Unsubscription Failed",
+        message: error.message,
+        actions: [
+          { text: "Try Again", action: () => this._handleUnsubscribe() },
+          { text: "Cancel", action: () => {} },
+        ],
+      });
+    }
   }
 
   _setupDrawer() {

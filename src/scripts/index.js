@@ -1,6 +1,7 @@
 // CSS imports
 import "../styles/styles.css";
 import App from "../app";
+import { registerServiceWorker } from "./utils";
 
 // Setup accessibility features
 function setupSkipToContent() {
@@ -28,6 +29,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   await app.renderPage();
+
+  await registerServiceWorker();
 
   window.addEventListener("hashchange", async () => {
     await app.renderPage();
