@@ -1,70 +1,45 @@
-import AboutPage from "../pages/about/about-page.js";
-import HomePage from "../pages/home/home-page.js";
-import AddPage from "../pages/add/add-page.js";
-import LoginPage from "../pages/auth/login/login-page.js";
-import RegisterPage from "../pages/auth/register/register-page.js";
+import HomePage from "../pages/home/home-page";
+import LoginPage from "../pages/auth/login/login-page";
 import {
   checkAuthenticatedRoute,
   checkUnauthenticatedRouteOnly,
 } from "../utils/auth";
+import RegisterPage from "../pages/auth/register/register-page";
+import StoryDetailPage from "../pages/story-detail/story-detail-page";
+import NewPage from "../pages/new/new-page";
+import BookmarkPage from "../pages/bookmark/bookmark-page";
+import AboutPage from "../pages/not-found/not-found-page";
 
 const routes = {
-  // Public routes
-  "/": {
-    component: () => new HomePage(),
-    authRequired: false,
-  },
-  "/about": {
-    component: () => new AboutPage(),
-    authRequired: false,
-  },
-
-  // Authenticated routes
-  "/add": {
-    component: () => new AddPage(),
-    authRequired: true,
-  },
-
-  // Auth pages
-  "/login": {
-    component: () => new LoginPage(),
-    authRequired: false,
-    unauthenticatedOnly: true,
-  },
-  "/register": {
-    component: () => new RegisterPage(),
-    authRequired: false,
-    unauthenticatedOnly: true,
-  },
+  "/": () => checkAuthenticatedRoute(new HomePage()),
+  "/login": () => checkUnauthenticatedRouteOnly(new LoginPage()),
+  "/register": () => checkUnauthenticatedRouteOnly(new RegisterPage()),
+  "/story/:id": () => checkAuthenticatedRoute(new StoryDetailPage()),
+  "/new": () => checkAuthenticatedRoute(new NewPage()),
+  "/bookmark": () => checkAuthenticatedRoute(new BookmarkPage()),
 };
 
-/**
- * Get route configuration for the current path
- * @param {string} path
- * @returns {Object|null} Route configuration or null if not found
- */
-export function getRouteConfig(path) {
-  const route = routes[path];
-
-  if (!route) return null;
-
-  if (route.authRequired && !checkAuthenticatedRoute()) {
-    window.location.hash = "/login";
-    return null;
+const matchRoute = (path) => {
+  const routeKeys = Object.keys(routes);
+  for (const route of routeKeys) {
+    if (route.includes(":")) {
+      const regex = new RegExp(`^${route.replace(/:\w+/g, "[^/]+")}$`);
+      if (regex.test(path)) {
+        return routes[route];
+      }
+    } else if (route === path) {
+      return routes[route];
+    }
   }
-
-  return route;
-}
-
-/**
- * Get all available routes
- * @returns {Object} All routes configuration
- */
-export function getAllRoutes() {
-  return routes;
-}
-
-export default {
-  getRouteConfig,
-  getAllRoutes,
+  return null;
 };
+
+export const resolveRoute = (path) => {
+  const matchedRoute = matchRoute(path);
+  if (matchedRoute) {
+    return matchedRoute();
+  }
+  return new AboutPage();
+};
+
+export default routes;

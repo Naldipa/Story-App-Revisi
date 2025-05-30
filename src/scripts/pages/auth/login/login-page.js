@@ -1,9 +1,9 @@
-import LoginPresenter from './login-presenter';
+import LoginPresenter from "./login-presenter";
+import * as StoryAPI from "../../../data/api";
+import * as AuthModel from "../../../utils/auth";
 
 export default class LoginPage {
-  constructor() {
-    this.presenter = new LoginPresenter();
-  }
+  #presenter = null;
 
   async render() {
     return `
@@ -30,10 +30,11 @@ export default class LoginPage {
               autocomplete="current-password"
             >
           </div>
-          <button type="submit" id="loginButton" class="btn btn-primary">
-            <span id="loginText">Login</span>
-            <span id="loginSpinner" class="loading-spinner" style="display:none"></span>
-          </button>
+          <div id="submit-button-container">
+            <button type="submit" class="btn" id="loginButton">
+              Masuk
+            </button>
+          </div>
         </form>
         <p>Don't have an account? <a href="#/register">Register here</a></p>
       </section>
@@ -41,66 +42,51 @@ export default class LoginPage {
   }
 
   async afterRender() {
-    this.bindLoginHandler();
-  }
-
-  bindLoginHandler() {
-    const loginForm = document.getElementById("loginForm");
-    if (!loginForm) return;
-
-    loginForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-
-      this.showLoading(true);
-
-      try {
-        await this.presenter.handleLogin(email, password);
-        this.navigateToHome();
-      } catch (error) {
-        this.showError(error.message);
-      } finally {
-        this.showLoading(false);
-      }
+    this.#presenter = new LoginPresenter({
+      view: this,
+      model: StoryAPI,
+      authModel: AuthModel,
     });
+
+    this.#setupForm();
   }
 
-  showLoading(show) {
-    const loginButton = document.getElementById("loginButton");
-    const loginText = document.getElementById("loginText");
-    const loginSpinner = document.getElementById("loginSpinner");
-
-    if (loginButton && loginText && loginSpinner) {
-      loginButton.disabled = show;
-      loginText.textContent = show ? "Logging in..." : "Login";
-      loginSpinner.style.display = show ? "inline-block" : "none";
-    }
-  }
-
-  showError(message) {
-    const errorElement = document.createElement("div");
-    errorElement.className = "error-message";
-    errorElement.textContent = message;
-    errorElement.setAttribute("role", "alert");
-
+  #setupForm() {
     const form = document.getElementById("loginForm");
-    if (form) {
-      const existingError = form.querySelector(".error-message");
-      if (existingError) existingError.remove();
-
-      form.prepend(errorElement);
-      setTimeout(() => errorElement.remove(), 5000);
-    }
+    form.addEventListener("submit", this.#handleSubmit.bind(this));
   }
 
-  navigateToHome() {
-    if (document.startViewTransition) {
-      document.startViewTransition(() => {
-        window.location.hash = "#/";
-      });
-    } else {
-      window.location.hash = "#/";
-    }
+  async #handleSubmit(event) {
+    event.preventDefault();
+
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    await this.#presenter.getLogin({ email, password });
+  }
+
+  loginSuccessfully(message) {
+    alert(message);
+    location.hash = "/";
+  }
+
+  loginFailed(message) {
+    alert(message);
+  }
+
+  showSubmitLoadingButton() {
+    document.getElementById("submit-button-container").innerHTML = `
+      <button class="btn" type="submit" disabled>
+        <i class="fas fa-spinner loader-button"></i> Loading...
+      </button>
+    `;
+  }
+
+  hideSubmitLoadingButton() {
+    document.getElementById("submit-button-container").innerHTML = `
+      <button class="btn" type="submit" id="loginButton">
+        Masuk
+      </button>
+    `;
   }
 }

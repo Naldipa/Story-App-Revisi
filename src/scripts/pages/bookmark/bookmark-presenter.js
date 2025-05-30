@@ -1,7 +1,6 @@
-import { getAllStories } from "../../data/api";
 import { storyMapper } from "../../data/api-mapper";
 
-export default class HomePresenter {
+export default class BookmarkPresenter {
   #view;
   #model;
 
@@ -12,10 +11,11 @@ export default class HomePresenter {
 
   async initialGallery() {
     this.#view.showLoading();
+
     try {
-      const response = await getAllStories();
+      const response = await this.#model.getAllStories();
       const story = await Promise.all(
-        response.listStory.map(async (story) => {
+        response.map(async (story) => {
           if (story.lat && story.lon) {
             return await storyMapper(story);
           }
@@ -23,11 +23,10 @@ export default class HomePresenter {
         })
       );
 
-      console.log(story);
-      this.#view.populateStoriesList(story);
+      this.#view.populateBookmarkedStories(story);
     } catch (error) {
       console.error("initialGallery: error:", error);
-      this.#view.populateStoriesListError(error.message);
+      this.#view.populateBookmarkedStoriesError(error.message);
     } finally {
       this.#view.hideLoading();
     }

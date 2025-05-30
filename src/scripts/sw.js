@@ -1,31 +1,91 @@
-self.addEventListener("push", (event) => {
-  let payload = {
-    title: "New Story Available",
-    body: "Check out the latest story on our app!",
-    icon: "/icons/icon-192x192.png",
-  };
+import { precacheAndRoute } from "workbox-precaching";
+import { registerRoute } from "workbox-routing";
+import { CacheableResponsePlugin } from "workbox-cacheable-response";
+import {
+  NetworkFirst,
+  CacheFirst,
+  StaleWhileRevalidate,
+} from "workbox-strategies";
+import CONFIG from "./config";
 
-  if (event.data) {
-    try {
-      // Coba parse sebagai JSON
-      const data = event.data.json();
-      payload.title = data.title || payload.title;
-      payload.body = data.body || payload.body;
-      payload.icon = data.icon || payload.icon;
-    } catch (error) {
-      console.warn("Push data bukan JSON valid, fallback ke text:", error);
-      // .text() adalah sinkron, langsung ambil stringnya
-      const text = event.data.text();
-      payload.body = text;
-    }
+precacheAndRoute(self.__WB_MANIFEST);
+
+registerRoute(
+  ({ url }) => {
+    return (
+      url.origin === "https://fonts.googleapis.com" ||
+      url.origin === "https://fonts.gstatic.com"
+    );
+  },
+  new CacheFirst({
+    cacheName: "google-fonts",
+  })
+);
+
+registerRoute(
+  ({ url }) => {
+    return (
+      url.origin === "https://cdnjs.cloudflare.com" ||
+      url.origin.includes("fontawesome")
+    );
+  },
+  new CacheFirst({
+    cacheName: "fontawesome",
+  })
+);
+
+registerRoute(
+  ({ url }) => {
+    return url.origin === "https://ui-avatars.com";
+  },
+  new CacheFirst({
+    cacheName: "avatars-api",
+    plugins: [
+      new CacheableResponsePlugin({
+        statuses: [0, 200],
+      }),
+    ],
+  })
+);
+
+registerRoute(
+  ({ request, url }) => {
+    const baseUrl = new URL(CONFIG.BASE_URL);
+    return baseUrl.origin === url.origin && request.destination !== "image";
+  },
+  new NetworkFirst({
+    cacheName: "storyapp-api",
+  })
+);
+
+registerRoute(
+  ({ request, url }) => {
+    const baseUrl = new URL(CONFIG.BASE_URL);
+    return baseUrl.origin === url.origin && request.destination === "image";
+  },
+  new StaleWhileRevalidate({
+    cacheName: "storyapp-api-images",
+  })
+);
+
+registerRoute(
+  ({ url }) => {
+    return url.origin.includes("maptiler");
+  },
+  new CacheFirst({
+    cacheName: "maptiler-api",
+  })
+);
+
+self.addEventListener("push", (event) => {
+  console.log("Service worker pushing...");
+
+  async function chainPromise() {
+    const data = await event.data.json();
+    await self.registration.showNotification(data.title, {
+      body: data.options.body,
+    });
   }
 
-  event.waitUntil(
-    self.registration.showNotification(payload.title, {
-      body: payload.body,
-      icon: payload.icon,
-      badge: "/icons/badge-72x72.png",
-      vibrate: [200, 100, 200],
-    })
-  );
+  event.waitUntil(chainPromise());
 });

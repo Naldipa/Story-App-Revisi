@@ -1,54 +1,48 @@
-import * as StoryAPI from "../../data/api";
 import {
   generateLoaderAbsoluteTemplate,
   generateStoriesListEmptyTemplate,
   generateStoriesListErrorTemplate,
   generateStoryItemTemplate,
 } from "../../templates";
-import HomePresenter from "./home-presenter";
+import BookmarkPresenter from "./bookmark-presenter";
+import Database from "../../data/database";
 
-export default class HomePage {
+export default class BookmarkPage {
   #presenter = null;
+  #map = null;
 
   async render() {
     return `
       <section class="container">
-        <h1 class="tag-line">Latest Stories</h1>
+        <h1 class="tag-line">Saved Stories</h1>
       </section>
 
       <section class="container">
         <div class="story-list__container">
-          <div id="story-list" class="story-list__item-container" role="list" aria-labelledby="tag-line"></div>
-          <div id="story-list-loading-container" role="status" aria-live="polite"></div>
+          <div id="story-list" class="story-list__item-container"></div>
+          <div id="story-list-loading-container"></div>
         </div>
       </section>
     `;
   }
 
   async afterRender() {
-    this.#presenter = new HomePresenter({
+    this.#presenter = new BookmarkPresenter({
       view: this,
-      model: StoryAPI,
+      model: Database,
     });
 
-    try {
-      await this.#presenter.initialGallery();
-    } catch (error) {
-      console.error("Error initializing gallery:", error);
-      this.populateStoriesListError(
-        "An unexpected error occurred while loading stories."
-      );
-    }
+    await this.#presenter.initialGallery();
   }
 
-  populateStoriesList(stories) {
-    if (stories.length === 0) {
+  populateBookmarkedStories(stories) {
+    if (stories.length <= 0) {
       this.populateStoriesEmpty();
       return;
     }
 
     const html = stories.reduce((accumulator, story) => {
-      return accumulator + generateStoryItemTemplate(story);
+      return accumulator.concat(generateStoryItemTemplate(story));
     }, "");
 
     document.getElementById("story-list").innerHTML = `
@@ -65,7 +59,7 @@ export default class HomePage {
     document.getElementById("story-list-loading-container").innerHTML = "";
   }
 
-  populateStoriesListError(message) {
+  populateBookmarkedStoriesError(message) {
     document.getElementById("story-list").innerHTML =
       generateStoriesListErrorTemplate(message);
   }

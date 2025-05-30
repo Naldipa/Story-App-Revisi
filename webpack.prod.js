@@ -2,30 +2,17 @@ const common = require("./webpack.common.js");
 const { merge } = require("webpack-merge");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
-const TerserPlugin = require("terser-webpack-plugin");
+const { GenerateSW } = require("workbox-webpack-plugin");
+const path = require("path");
+const { InjectManifest } = require("workbox-webpack-plugin");
 
 module.exports = merge(common, {
   mode: "production",
-  devtool: "source-map",
   module: {
     rules: [
       {
         test: /\.css$/,
-        use: [
-          {
-            loader: MiniCssExtractPlugin.loader,
-            options: {
-              publicPath: "../",
-            },
-          },
-          {
-            loader: "css-loader",
-            options: {
-              sourceMap: true,
-            },
-          },
-        ],
+        use: [MiniCssExtractPlugin.loader, "css-loader"],
       },
       {
         test: /\.js$/,
@@ -34,50 +21,19 @@ module.exports = merge(common, {
           {
             loader: "babel-loader",
             options: {
-              presets: [
-                [
-                  "@babel/preset-env",
-                  {
-                    useBuiltIns: "usage",
-                    corejs: 3,
-                  },
-                ],
-              ],
-              cacheDirectory: true,
+              presets: ["@babel/preset-env"],
             },
           },
         ],
       },
     ],
   },
-  optimization: {
-    minimize: true,
-    minimizer: [
-      new TerserPlugin({
-        parallel: true,
-        terserOptions: {
-          ecma: 2015,
-          compress: {
-            drop_console: true,
-          },
-        },
-      }),
-      new CssMinimizerPlugin(),
-    ],
-    splitChunks: {
-      chunks: "all",
-    },
-  },
   plugins: [
     new CleanWebpackPlugin(),
-    new MiniCssExtractPlugin({
-      filename: "css/[name].[contenthash:8].css",
-      chunkFilename: "css/[name].[contenthash:8].chunk.css",
+    new MiniCssExtractPlugin(),
+    new InjectManifest({
+      swSrc: path.resolve(__dirname, "src/scripts/sw.js"),
+      swDest: "sw.bundle.js",
     }),
   ],
-  performance: {
-    hints: "warning",
-    maxAssetSize: 500000,
-    maxEntrypointSize: 500000,
-  },
 });

@@ -1,74 +1,95 @@
-import AuthModel from "../../../models/auth-model";
+import RegisterPresenter from "./register-presenter";
+import * as StoryAPI from "../../../data/api";
 
 export default class RegisterPage {
+  #presenter = null;
+
   async render() {
     return `
-      <section class="auth-container">
-        <h1 tabindex="0">Register</h1>
-        <form id="registerForm" aria-labelledby="registerHeading">
-          <div class="form-group">
-            <label for="name">Full Name</label>
-            <input 
-              type="text" 
-              id="name" 
-              required
-              aria-required="true"
-            >
-          </div>
-          <div class="form-group">
-            <label for="email">Email</label>
-            <input 
-              type="email" 
-              id="email" 
-              required
-              aria-required="true"
-              autocomplete="username"
-            >
-          </div>
-          <div class="form-group">
-            <label for="password">Password (min 6 characters)</label>
-            <input 
-              type="password" 
-              id="password" 
-              minlength="6"
-              required
-              aria-required="true"
-              autocomplete="new-password"
-            >
-          </div>
-          <button type="submit" id="registerButton">Register</button>
-        </form>
-        <p>Already have an account? <a href="#/login">Login here</a></p>
+      <section class="register-container">
+        <div class="register-form-container">
+          <h1 class="register__title">Daftar akun</h1>
+
+          <form id="register-form" class="register-form">
+            <div class="form-control">
+              <label for="name-input" class="register-form__name-title">Nama lengkap</label>
+
+              <div class="register-form__title-container">
+                <input id="name-input" type="text" name="name" placeholder="Masukkan nama lengkap Anda">
+              </div>
+            </div>
+            <div class="form-control">
+              <label for="email-input" class="register-form__email-title">Email</label>
+
+              <div class="register-form__title-container">
+                <input id="email-input" type="email" name="email" placeholder="Contoh: nama@email.com">
+              </div>
+            </div>
+            <div class="form-control">
+              <label for="password-input" class="register-form__password-title">Password</label>
+
+              <div class="register-form__title-container">
+                <input id="password-input" type="password" name="password" placeholder="Masukkan password baru">
+              </div>
+            </div>
+            <div class="form-buttons register-form__form-buttons">
+              <div id="submit-button-container">
+                <button class="btn" type="submit">Daftar akun</button>
+              </div>
+              <p class="register-form__already-have-account">Sudah punya akun? <a href="#/login">Masuk</a></p>
+            </div>
+          </form>
+        </div>
       </section>
     `;
   }
 
   async afterRender() {
-    const authModel = new AuthModel();
-    const registerForm = document.getElementById("registerForm");
-
-    registerForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const registerButton = document.getElementById("registerButton");
-
-      try {
-        registerButton.disabled = true;
-        registerButton.innerHTML = "Registering...";
-
-        await authModel.register({
-          name: document.getElementById("name").value,
-          email: document.getElementById("email").value,
-          password: document.getElementById("password").value,
-        });
-
-        alert("Registration successful! Please login");
-        window.location.hash = "#/login";
-      } catch (error) {
-        alert(`Registration failed: ${error.message}`);
-      } finally {
-        registerButton.disabled = false;
-        registerButton.innerHTML = "Register";
-      }
+    this.#presenter = new RegisterPresenter({
+      view: this,
+      model: StoryAPI,
     });
+
+    this.#setupForm();
+  }
+
+  #setupForm() {
+    document
+      .getElementById("register-form")
+      .addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const data = {
+          name: document.getElementById("name-input").value,
+          email: document.getElementById("email-input").value,
+          password: document.getElementById("password-input").value,
+        };
+        await this.#presenter.getRegistered(data);
+      });
+  }
+
+  registeredSuccessfully(message) {
+    console.log(message);
+
+    // Redirect
+    location.hash = "/login";
+  }
+
+  registeredFailed(message) {
+    alert(message);
+  }
+
+  showSubmitLoadingButton() {
+    document.getElementById("submit-button-container").innerHTML = `
+      <button class="btn" type="submit" disabled>
+        <i class="fas fa-spinner loader-button"></i> Daftar akun
+      </button>
+    `;
+  }
+
+  hideSubmitLoadingButton() {
+    document.getElementById("submit-button-container").innerHTML = `
+      <button class="btn" type="submit">Daftar akun</button>
+    `;
   }
 }

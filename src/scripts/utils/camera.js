@@ -1,84 +1,178 @@
 export default class Camera {
-  constructor({ video, canvas }) {
-    this.video = video;
-    this.canvas = canvas;
-    this.stream = null;
-    this.photoBlob = null;
+  #currentStream;
+  #streaming = false;
+  #width = 640;
+  #height = 0;
+
+  #videoElement;
+  #selectCameraElement;
+  #canvasElement;
+
+  #takePictureButton;
+
+  static addNewStream(stream) {
+    if (!Array.isArray(window.currentStreams)) {
+      window.currentStreams = [stream];
+      return;
+    }
+
+    window.currentStreams = [...window.currentStreams, stream];
   }
 
-  async start() {
+  static stopAllStreams() {
+    if (!Array.isArray(window.currentStreams)) {
+      window.currentStreams = [];
+      return;
+    }
+
+    window.currentStreams.forEach((stream) => {
+      if (stream.active) {
+        stream.getTracks().forEach((track) => track.stop());
+      }
+    });
+  }
+
+  constructor({ video, cameraSelect, canvas, options = {} }) {
+    this.#videoElement = video;
+    this.#selectCameraElement = cameraSelect;
+    this.#canvasElement = canvas;
+
+    this.#initialListener();
+  }
+
+  #initialListener() {
+    this.#videoElement.oncanplay = () => {
+      if (this.#streaming) {
+        return;
+      }
+
+      this.#height =
+        (this.#videoElement.videoHeight * this.#width) /
+        this.#videoElement.videoWidth;
+
+      this.#canvasElement.setAttribute("width", this.#width);
+      this.#canvasElement.setAttribute("height", this.#height);
+
+      this.#streaming = true;
+    };
+
+    this.#selectCameraElement.onchange = async () => {
+      await this.stop();
+      await this.launch();
+    };
+  }
+
+  async #populateDeviceList(stream) {
     try {
-      this.stream = await navigator.mediaDevices.getUserMedia({
+      if (!(stream instanceof MediaStream)) {
+        return Promise.reject(Error("MediaStream not found!"));
+      }
+
+      const { deviceId } = stream.getVideoTracks()[0].getSettings();
+
+      const enumeratedDevices = await navigator.mediaDevices.enumerateDevices();
+      const list = enumeratedDevices.filter((device) => {
+        return device.kind === "videoinput";
+      });
+
+      const html = list.reduce((accumulator, device, currentIndex) => {
+        return accumulator.concat(`
+          <option
+            value="${device.deviceId}"
+            ${deviceId === device.deviceId ? "selected" : ""}
+          >
+            ${device.label || `Camera ${currentIndex + 1}`}
+          </option>
+        `);
+      }, "");
+
+      this.#selectCameraElement.innerHTML = html;
+    } catch (error) {
+      console.error("#populateDeviceList: error:", error);
+    }
+  }
+
+  async #getStream() {
+    try {
+      const deviceId =
+        !this.#streaming && !this.#selectCameraElement.value
+          ? undefined
+          : { exact: this.#selectCameraElement.value };
+
+      const stream = await navigator.mediaDevices.getUserMedia({
         video: {
-          facingMode: "environment",
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
+          aspectRatio: 4 / 3,
+          deviceId,
         },
-        audio: false,
       });
 
-      this.video.srcObject = this.stream;
-      await new Promise((resolve) => {
-        this.video.onloadedmetadata = resolve;
-      });
+      // Show available camera after camera permission granted
+      await this.#populateDeviceList(stream);
 
-      // Start video playback
-      await this.video.play();
-      return true;
+      return stream;
     } catch (error) {
-      console.error("Camera error:", error);
-      throw new Error(
-        "Could not access camera. Please ensure permissions are granted."
-      );
+      console.error("#getStream: error:", error);
+      return null;
     }
   }
 
-  async capture() {
-    if (!this.stream) {
-      throw new Error("Camera not started");
-    }
+  async launch() {
+    this.#currentStream = await this.#getStream();
 
-    try {
-      // Set canvas dimensions to match video stream
-      this.canvas.width = this.video.videoWidth;
-      this.canvas.height = this.video.videoHeight;
+    // Record all MediaStream in global context
+    Camera.addNewStream(this.#currentStream);
 
-      // Draw current video frame to canvas
-      const context = this.canvas.getContext("2d");
-      context.drawImage(
-        this.video,
-        0,
-        0,
-        this.canvas.width,
-        this.canvas.height
-      );
+    this.#videoElement.srcObject = this.#currentStream;
+    this.#videoElement.play();
 
-      // Convert canvas to blob
-      return await new Promise((resolve) => {
-        this.canvas.toBlob(
-          (blob) => {
-            this.photoBlob = blob;
-            resolve(blob);
-          },
-          "image/jpeg",
-          0.9
-        );
-      });
-    } catch (error) {
-      console.error("Capture error:", error);
-      throw new Error("Failed to capture photo");
-    }
+    this.#clearCanvas();
   }
 
   stop() {
-    if (this.stream) {
-      this.stream.getTracks().forEach((track) => track.stop());
-      this.video.srcObject = null;
-      this.stream = null;
+    if (this.#videoElement) {
+      this.#videoElement.srcObject = null;
+      this.#streaming = false;
     }
+
+    if (this.#currentStream instanceof MediaStream) {
+      this.#currentStream.getTracks().forEach((track) => {
+        track.stop();
+      });
+    }
+
+    this.#clearCanvas();
   }
 
-  getLastPhoto() {
-    return this.photoBlob;
+  #clearCanvas() {
+    const context = this.#canvasElement.getContext("2d");
+    context.fillStyle = "#AAAAAA";
+    context.fillRect(
+      0,
+      0,
+      this.#canvasElement.width,
+      this.#canvasElement.height
+    );
+  }
+
+  async takePicture() {
+    if (!(this.#width && this.#height)) {
+      return null;
+    }
+
+    const context = this.#canvasElement.getContext("2d");
+
+    this.#canvasElement.width = this.#width;
+    this.#canvasElement.height = this.#height;
+
+    context.drawImage(this.#videoElement, 0, 0, this.#width, this.#height);
+
+    return await new Promise((resolve) => {
+      this.#canvasElement.toBlob((blob) => resolve(blob));
+    });
+  }
+
+  addCheeseButtonListener(selector, callback) {
+    this.#takePictureButton = document.querySelector(selector);
+    this.#takePictureButton.onclick = callback;
   }
 }

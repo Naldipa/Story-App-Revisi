@@ -1,18 +1,9 @@
-import CONFIG from "../config";
-
-function convertBase64ToUint8Array(base64String) {
-  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
-
-  const rawData = window.atob(base64);
-  const outputArray = new Uint8Array(rawData.length);
-
-  for (let i = 0; i < rawData.length; ++i) {
-    outputArray[i] = rawData.charCodeAt(i);
-  }
-
-  return outputArray;
-}
+import { convertBase64ToUint8Array } from "./index";
+import { VAPID_PUBLIC_KEY } from "../config";
+import {
+  subscribePushNotification,
+  unsubscribePushNotification,
+} from "../data/api";
 
 export function isNotificationAvailable() {
   return "Notification" in window;
@@ -48,12 +39,19 @@ export async function requestNotificationPermission() {
 }
 
 export async function getPushSubscription() {
-  const registration = await navigator.serviceWorker.getRegistration();
-  return await registration?.pushManager.getSubscription();
+  const registration = await navigator.serviceWorker.ready;
+  return await registration.pushManager.getSubscription();
 }
 
 export async function isCurrentPushSubscriptionAvailable() {
   return !!(await getPushSubscription());
+}
+
+export function generateSubscribeOptions() {
+  return {
+    userVisibleOnly: true,
+    applicationServerKey: convertBase64ToUint8Array(VAPID_PUBLIC_KEY),
+  };
 }
 
 export async function subscribe() {
@@ -62,86 +60,86 @@ export async function subscribe() {
   }
 
   if (await isCurrentPushSubscriptionAvailable()) {
-    alert("You're already subscribed to push notifications.");
+    alert("Sudah berlangganan push notification.");
     return;
   }
 
+  console.log("Mulai berlangganan push notification...");
+
+  const failureSubscribeMessage =
+    "Langganan push notification gagal diaktifkan.";
+  const successSubscribeMessage =
+    "Langganan push notification berhasil diaktifkan.";
+
+  let pushSubscription;
+
   try {
-    const registration = await navigator.serviceWorker.getRegistration();
+    const registration = await navigator.serviceWorker.ready;
+    pushSubscription = await registration.pushManager.subscribe(
+      generateSubscribeOptions()
+    );
 
-    if (!registration) {
-      throw new Error("Service worker not registered");
-    }
-
-    const subscription = await registration.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: convertBase64ToUint8Array(CONFIG.VAPID_PUBLIC_KEY),
-    });
-
-    await sendSubscriptionToServer(subscription);
-    return subscription;
-  } catch (error) {
-    console.error("Subscription failed:", error);
-    throw new Error("Failed to subscribe to push notifications");
-  }
-}
-
-async function sendSubscriptionToServer(subscription) {
-  try {
-    const token = localStorage.getItem(CONFIG.ACCESS_TOKEN_KEY);
-
-    const payload = {
-      endpoint: subscription.endpoint,
-      keys: {
-        p256dh: subscription.toJSON().keys.p256dh,
-        auth: subscription.toJSON().keys.auth,
-      },
-    };
-
-    const response = await fetch(`${CONFIG.BASE_URL}/notifications/subscribe`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(payload),
-    });
+    const { endpoint, keys } = pushSubscription.toJSON();
+    const response = await subscribePushNotification({ endpoint, keys });
 
     if (!response.ok) {
-      throw new Error("Failed to save subscription to server");
+      console.error("subscribe: response:", response);
+      alert(failureSubscribeMessage);
+
+      // Undo subscribe to push notification
+      await pushSubscription.unsubscribe();
+
+      return;
     }
 
-    const result = await response.json();
-    console.log("Subscription success:", result.message);
+    alert(successSubscribeMessage);
   } catch (error) {
-    console.error("Error sending subscription to server:", error);
+    console.error("subscribe: error:", error);
+    alert(failureSubscribeMessage);
+
+    // Undo subscribe to push notification
+    await pushSubscription.unsubscribe();
   }
 }
 
 export async function unsubscribe() {
-  const subscription = await getPushSubscription();
-  if (!subscription) return;
+  const failureUnsubscribeMessage =
+    "Langganan push notification gagal dinonaktifkan.";
+  const successUnsubscribeMessage =
+    "Langganan push notification berhasil dinonaktifkan.";
 
   try {
-    const token = localStorage.getItem(CONFIG.ACCESS_TOKEN_KEY);
-    const response = await fetch(`${CONFIG.BASE_URL}/notifications/subscribe`, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ endpoint: subscription.endpoint }),
-    });
+    const pushSubscription = await getPushSubscription();
 
-    if (!response.ok) {
-      throw new Error("Failed to unsubscribe");
+    if (!pushSubscription) {
+      alert(
+        "Tidak bisa memutus langganan push notification karena belum berlangganan sebelumnya."
+      );
+      return;
     }
 
-    const result = await response.json();
-    console.log("Unsubscribe success:", result.message);
+    const { endpoint, keys } = pushSubscription.toJSON();
+    const response = await unsubscribePushNotification({ endpoint });
 
-    await subscription.unsubscribe();
+    if (!response.ok) {
+      alert(failureUnsubscribeMessage);
+      console.error("unsubscribe: response:", response);
+
+      return;
+    }
+
+    const unsubscribed = await pushSubscription.unsubscribe();
+
+    if (!unsubscribed) {
+      alert(failureUnsubscribeMessage);
+      await subscribePushNotification({ endpoint, keys });
+
+      return;
+    }
+
+    alert(successUnsubscribeMessage);
   } catch (error) {
-    console.error("Unsubscribe error:", error);
+    alert(failureUnsubscribeMessage);
+    console.error("unsubscribe: error:", error);
   }
 }

@@ -1,17 +1,33 @@
-import AuthModel from "../../../models/auth-model";
-
 export default class LoginPresenter {
-  constructor() {
-    this.authModel = new AuthModel();
+  #view;
+  #model;
+  #authModel;
+
+  constructor({ view, model, authModel }) {
+    this.#view = view;
+    this.#model = model;
+    this.#authModel = authModel;
   }
 
-  async handleLogin(email, password) {
+  async getLogin({ email, password }) {
+    this.#view.showSubmitLoadingButton();
     try {
-      const { token } = await this.authModel.login({ email, password });
-      return { token };
+      const response = await this.#model.getLogin({ email, password });
+
+      if (!response.ok || !response.loginResult?.token) {
+        console.error("Login failed. Response:", response);
+        this.#view.loginFailed(response.message || "Login gagal.");
+        return;
+      }
+
+      this.#authModel.putAccessToken(response.loginResult.token);
+
+      this.#view.loginSuccessfully(response.message, response.loginResult);
     } catch (error) {
-      console.error("Login error:", error);
-      throw error;
+      console.error("getLogin: error:", error);
+      this.#view.loginFailed(error.message || "Terjadi kesalahan saat login.");
+    } finally {
+      this.#view.hideSubmitLoadingButton();
     }
   }
 }
