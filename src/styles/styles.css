@@ -1,4 +1,6 @@
-/* Base Styles */
+/* ==============================================
+   VARIABLES & BASE STYLES
+   ============================================== */
 :root {
   --primary-color: #4361ee;
   --primary-light: #4895ef;
@@ -68,7 +70,9 @@ button {
   padding: 0 1rem;
 }
 
-/* Typography */
+/* ==============================================
+   TYPOGRAPHY
+   ============================================== */
 h1,
 h2,
 h3,
@@ -83,11 +87,9 @@ h6 {
 h1 {
   font-size: 2.5rem;
 }
-
 h2 {
   font-size: 2rem;
 }
-
 h3 {
   font-size: 1.75rem;
 }
@@ -96,7 +98,9 @@ p {
   margin-bottom: 1rem;
 }
 
-/* Layout */
+/* ==============================================
+   LAYOUT COMPONENTS
+   ============================================== */
 header {
   background-color: var(--white);
   box-shadow: var(--box-shadow);
@@ -130,10 +134,20 @@ footer {
   align-items: center;
 }
 
+/* ==============================================
+   BRANDING & NAVIGATION
+   ============================================== */
 .brand-name {
   font-weight: 700;
   font-size: 1.5rem;
   color: var(--primary-color);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.brand-name i {
+  font-size: 1.3rem;
 }
 
 .brand-name__link {
@@ -157,25 +171,54 @@ hr {
   margin: 1rem 0;
 }
 
-/* Navigation */
 .navigation-drawer {
   display: flex;
   align-items: center;
-  gap: 2rem;
+  justify-content: space-between;
+  width: 100%;
 }
 
 .nav-list {
   display: flex;
   gap: 1rem;
+  align-items: center;
+  margin-left: auto;
 }
+/* ==============================================
+   MOBILE NAVIGATION STYLES
+   ============================================== */
 
 .mobile-nav {
   display: none;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 0 1rem;
 }
 
 .drawer-button {
   font-size: 1.5rem;
   display: none;
+  background: none;
+  border: none;
+  color: var(--primary-color);
+  padding: 0.5rem;
+  margin-right: 1rem;
+}
+
+.brand-name,
+.brand-name-mobile {
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: var(--primary-color);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.brand-name i,
+.brand-name-mobile i {
+  font-size: 1.3rem;
 }
 
 .skip-link {
@@ -193,7 +236,9 @@ hr {
   top: 0;
 }
 
-/* Buttons */
+/* ==============================================
+   BUTTONS & FORM ELEMENTS
+   ============================================== */
 .btn {
   display: inline-block;
   padding: 0.5rem 1rem;
@@ -247,7 +292,6 @@ hr {
   padding: 0;
 }
 
-/* Forms */
 .form-control {
   margin-bottom: 1.5rem;
 }
@@ -283,7 +327,9 @@ hr {
   margin-top: 2rem;
 }
 
-/* Story List */
+/* ==============================================
+   STORY COMPONENTS
+   ============================================== */
 .story-list__container {
   margin-top: 2rem;
 }
@@ -292,6 +338,24 @@ hr {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 2rem;
+}
+
+.story-list-button {
+  background-color: var(--primary-light);
+  color: var(--white);
+}
+
+.story-list-button:hover {
+  background-color: var(--primary-color);
+}
+
+.bookmark-button {
+  background-color: var(--success-color);
+  color: var(--white);
+}
+
+.bookmark-button:hover {
+  background-color: #3aa8d1;
 }
 
 .story-item {
@@ -338,7 +402,6 @@ hr {
   color: var(--gray-color);
 }
 
-/* Story Detail */
 .story-detail__container {
   max-width: 800px;
   margin: 0 auto;
@@ -418,25 +481,98 @@ hr {
   margin-top: 1rem;
 }
 
-/* Auth Pages */
+/* ==============================================
+   AUTH PAGES
+   ============================================== */
 .auth-container {
-  max-width: 500px;
-  margin: 2rem auto;
-  padding: 2rem;
-  background-color: var(--white);
-  border-radius: var(--border-radius);
-  box-shadow: var(--box-shadow);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+  padding: 2rem 1rem;
 }
 
-.auth-container h1 {
+.auth-card {
+  width: 100%;
+  max-width: 400px;
+  background: var(--white);
+  border-radius: var(--border-radius);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  padding: 2.5rem;
+}
+
+.auth-title {
   text-align: center;
+  font-size: 1.8rem;
+  color: var(--primary-dark);
   margin-bottom: 2rem;
 }
 
-/* New Story Form */
+.auth-form {
+  margin-bottom: 1.5rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--dark-color);
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--gray-light);
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  transition: var(--transition);
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+}
+
+.form-submit {
+  margin-top: 2rem;
+}
+
+.btn-auth {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.auth-footer {
+  text-align: center;
+  color: var(--gray-color);
+  margin-top: 1.5rem;
+}
+
+.auth-link {
+  color: var(--primary-color);
+  font-weight: 500;
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+.auth-link:hover {
+  text-decoration: underline;
+}
+
+/* ==============================================
+   NEW STORY FORM
+   ============================================== */
 .new-form__container {
   max-width: 800px;
   margin: 0 auto;
+  background-color: red;
 }
 
 .new-form {
@@ -548,7 +684,95 @@ hr {
   flex: 1;
 }
 
-/* Loader */
+/* ==============================================
+   NAVIGATION BUTTONS
+   ============================================== */
+.nav-list {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-left: auto;
+  padding-right: 1rem;
+}
+.navigation-drawer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.nav-list__right {
+  margin-left: auto;
+  display: flex;
+  gap: 1rem;
+}
+
+.nav-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--border-radius);
+  font-weight: 500;
+  transition: var(--transition);
+  font-size: 0.95rem;
+  min-width: 120px;
+  text-align: center;
+  border: none;
+}
+
+.nav-button i {
+  font-size: 0.9rem;
+  width: 16px; /* Lebar ikon yang konsisten */
+  text-align: center;
+}
+
+/* Style khusus untuk button subscribe */
+.subscribe-button {
+  background-color: var(--primary-color);
+  color: var(--white);
+}
+
+.subscribe-button:hover {
+  background-color: var(--primary-dark);
+}
+
+/* Style khusus untuk button unsubscribe */
+.unsubscribe-button {
+  background-color: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color) !important;
+}
+
+.unsubscribe-button:hover {
+  background-color: var(--primary-color);
+  color: var(--white);
+}
+
+/* Style untuk button logout */
+.logout-button {
+  background-color: var(--danger-color);
+  color: var(--white);
+}
+
+.logout-button:hover {
+  background-color: #d00000;
+}
+
+/* Style untuk button add story */
+.add-story-button {
+  background-color: var(--primary-color);
+  color: var(--white);
+}
+
+.add-story-button:hover {
+  background-color: var(--primary-dark);
+}
+
+/* ==============================================
+   LOADERS & ANIMATIONS
+   ============================================== */
 .loader {
   width: 48px;
   height: 48px;
@@ -582,31 +806,52 @@ hr {
   }
 }
 
-/* Not Found Page */
-.not-found-container {
+/* ==============================================
+   NOT FOUND PAGE
+   ============================================== */
+/* Error Pages */
+.not-found-container,
+.error-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 60vh;
+  min-height: 70vh;
   text-align: center;
+  padding: 2rem;
 }
 
-.not-found-content {
+.not-found-content,
+.error-content {
   max-width: 500px;
   padding: 2rem;
+  background: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
 }
 
 .not-found-title {
   font-size: 5rem;
   color: var(--primary-color);
+  margin-bottom: 1rem;
 }
 
 .not-found-subtitle {
   font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.not-found-description {
+  color: var(--gray-color);
   margin-bottom: 2rem;
 }
 
-/* Utility Classes */
+.error-content h1 {
+  color: var(--danger-color);
+}
+
+/* ==============================================
+   UTILITY CLASSES
+   ============================================== */
 .tag-line {
   font-size: 2rem;
   text-align: center;
@@ -618,33 +863,38 @@ hr {
   text-align: center;
 }
 
-/* Map Styles */
+/* ==============================================
+   MAP STYLES
+   ============================================== */
 .leaflet-container {
   width: 100%;
   height: 100%;
 }
 
-/* Responsive Styles */
+/* ==============================================
+   RESPONSIVE STYLES
+   ============================================== */
 @media (max-width: 768px) {
   .main-header {
-    flex-direction: column;
-    align-items: flex-start;
+    padding: 0.5rem 0;
   }
 
   .navigation-drawer {
     position: fixed;
     top: 0;
     left: -100%;
-    width: 80%;
+    width: 85%;
     max-width: 300px;
     height: 100vh;
     background-color: var(--white);
     flex-direction: column;
     align-items: flex-start;
-    padding: 2rem;
-    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    padding: 2rem 1rem;
+    box-shadow: 2px 0 15px rgba(0, 0, 0, 0.1);
     transition: var(--transition);
-    z-index: 100;
+    z-index: 1000;
+    justify-content: flex-start;
+    padding-top: 4rem;
   }
 
   .navigation-drawer.open {
@@ -654,13 +904,28 @@ hr {
   .nav-list {
     flex-direction: column;
     width: 100%;
+    gap: 0.5rem;
+    margin-left: 0;
+    padding-right: 0;
+  }
+  .nav-list li {
+    width: 100%;
+  }
+  .nav-button {
+    width: 100%;
+    justify-content: center;
+    padding: 0.85rem 1rem; 
+    margin-bottom: 0.5rem;
+  }
+
+  .nav-list__right {
+    flex-direction: column;
+    width: 100%;
+    margin-left: 0;
   }
 
   .mobile-nav {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
   }
 
   .drawer-button {
@@ -680,18 +945,25 @@ hr {
     gap: 1rem;
     text-align: center;
   }
+  .main-nav {
+    display: none;
+  }
 }
 
 @media (max-width: 480px) {
-  .form-buttons {
-    flex-direction: column;
+  .auth-card {
+    padding: 1.5rem;
   }
 
-  .btn {
-    width: 100%;
+  .auth-title {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .drawer-button {
+    margin-right: 0.5rem;
   }
 
-  .new-form__documentations__buttons {
-    flex-direction: column;
+  .navigation-drawer {
+    width: 90%;
   }
 }

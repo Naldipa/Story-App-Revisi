@@ -1,20 +1,96 @@
 {
   "name": "Story App",
   "short_name": "StoryApp",
+  "description": "Share and discover interesting stories",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#317EFB",
+  "theme_color": "#4361ee",
+  "orientation": "portrait",
+  "categories": ["social", "stories", "entertainment"],
   "icons": [
     {
-      "src": "/icons/icon-192x192.png",
+      "src": "/images/icons/icon-x48.png",
+      "type": "image/png",
+      "sizes": "48x48"
+    },
+    {
+      "src": "/images/icons/icon-96.png",
+      "type": "image/png",
+      "sizes": "96x96"
+    },
+    {
+      "src": "/images/icons/icon-192.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "/icons/icon-512x512.png",
+      "src": "/images/icons/icon-x384.png",
+      "type": "image/png",
+      "sizes": "384x384"
+    },
+    {
+      "src": "/images/icons/icon-x512.png",
       "type": "image/png",
       "sizes": "512x512"
+    },
+    {
+      "src": "/images/icons/add-x512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/images/icons/book-x512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/images/icons/bookmark-x512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/images/screenshots/StoryAppMobile.png",
+      "type": "image/png",
+      "sizes": "1080x1920",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "/images/screenshots/StoryAppWide.png",
+      "type": "image/png",
+      "sizes": "1920x1080",
+      "form_factor": "wide"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Add New Story",
+      "short_name": "Add Story",
+      "description": "Create and share a new story",
+      "url": "/new",
+      "icons": [
+        {
+          "src": "/images/icons/add-x512.png",
+          "sizes": "512x512"
+        }
+      ]
+    },
+    {
+      "name": "Saved Stories",
+      "short_name": "Bookmarks",
+      "description": "View your saved stories",
+      "url": "/bookmark",
+      "icons": [
+        {
+          "src": "/images/icons/bookmark-x512.png",
+          "sizes": "512x512"
+        }
+      ]
     }
   ]
 }

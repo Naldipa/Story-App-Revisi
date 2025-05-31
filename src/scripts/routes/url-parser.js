@@ -27,6 +27,7 @@ export function getActivePathname() {
 
 export function getActiveRoute() {
   const pathname = getActivePathname();
+  console.log("Current path:", pathname); // Debug
   const urlSegments = extractPathnameSegments(pathname);
   return constructRouteFromSegments(urlSegments);
 }

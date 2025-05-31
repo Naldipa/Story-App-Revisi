@@ -7,38 +7,44 @@ export default class LoginPage {
 
   async render() {
     return `
-      <section class="auth-container">
-        <h1 tabindex="0">Login</h1>
-        <form id="loginForm" aria-labelledby="loginHeading">
+    <section class="auth-container">
+      <div class="auth-card">
+        <h1 class="auth-title" tabindex="0">Login</h1>
+        <form id="loginForm" class="auth-form" aria-labelledby="loginHeading">
           <div class="form-group">
-            <label for="email">Email</label>
+            <label for="email" class="form-label">Email</label>
             <input 
               type="email" 
               id="email" 
+              class="form-input"
               required
               aria-required="true"
               autocomplete="username"
+              placeholder="Enter your email"
             >
           </div>
           <div class="form-group">
-            <label for="password">Password</label>
+            <label for="password" class="form-label">Password</label>
             <input 
               type="password" 
               id="password" 
+              class="form-input"
               required
               aria-required="true"
               autocomplete="current-password"
+              placeholder="Enter your password"
             >
           </div>
-          <div id="submit-button-container">
-            <button type="submit" class="btn" id="loginButton">
-              Masuk
+          <div id="submit-button-container" class="form-submit">
+            <button type="submit" class="btn btn-auth" id="loginButton">
+              Login
             </button>
           </div>
         </form>
-        <p>Don't have an account? <a href="#/register">Register here</a></p>
-      </section>
-    `;
+        <p class="auth-footer">Don't have an account? <a href="#/register" class="auth-link">Register here</a></p>
+      </div>
+    </section>
+  `;
   }
 
   async afterRender() {

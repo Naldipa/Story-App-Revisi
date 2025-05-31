@@ -77,15 +77,33 @@ registerRoute(
   })
 );
 
-self.addEventListener("push", (event) => {
-  console.log("Service worker pushing...");
-
-  async function chainPromise() {
-    const data = await event.data.json();
-    await self.registration.showNotification(data.title, {
-      body: data.options.body,
-    });
+self.addEventListener('push', (event) => {
+  console.log('Push Notification Received');
+  
+  let notificationData;
+  try {
+    // Coba parse sebagai JSON
+    notificationData = event.data.json();
+  } catch (e) {
+    // Jika gagal, gunakan sebagai plain text
+    notificationData = {
+      title: 'New Notification',
+      body: event.data.text() || 'You have a new message',
+      icon: '/images/icons/icon-192.png'
+    };
   }
 
-  event.waitUntil(chainPromise());
+  const showNotification = async () => {
+    await self.registration.showNotification(
+      notificationData.title || 'Story App',
+      {
+        body: notificationData.body,
+        icon: notificationData.icon || '/images/icons/icon-192.png',
+        badge: '/images/icons/icon-96.png',
+        vibrate: [200, 100, 200]
+      }
+    );
+  };
+
+  event.waitUntil(showNotification());
 });

@@ -20,13 +20,26 @@ export function generateUnauthenticatedNavigationListTemplate() {
 
 export function generateAuthenticatedNavigationListTemplate() {
   return `
-    <li><a href="#/bookmark" class="bookmark-button"><button id="story-detail-save" class="btn-ghost">Saved story <i class="far fa-bookmark"></i></button></a></li>
-    <li><a href="javascript:void(0)" id="push-notification-tools" class="push-notification-tools"></a></li>
-    <li><a id="new-report-button" href="#/new"><button class="btn-ghost">Add Story<i class="fas fa-plus"></i></button></a></li>
-    <li><a id="logout-button" class="logout-button" href="#/logout"><button class="btn"><i class="fas fa-sign-out-alt"></i> Logout</button></a></li>
+    <li class="nav-list__right">
+      <a href="#/bookmark" class="bookmark-button">
+        <button class="nav-button">
+          <i class="far fa-bookmark"></i> Saved story
+        </button>
+      </a>
+      <a href="#/new" class="add-story-button">
+        <button class="nav-button add-story-button">
+          <i class="fas fa-plus"></i> Add Story
+        </button>
+      </a>
+      <div id="push-notification-tools" class="push-notification-tools"></div>
+      <a href="#/logout" class="logout-button">
+        <button class="nav-button logout-button">
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </button>
+      </a>
+    </li>
   `;
 }
-
 export function generateMainNavigationListTemplate() {
   return `
     <li><a id="report-list-button" class="report-list-button" href="#/">Daftar Laporan</a></li>
@@ -128,16 +141,16 @@ export function generateStoryDetailTemplate({
 
 export function generateSubscribeButtonTemplate() {
   return `
-    <button id="subscribe-button" class="btn subscribe-button">
-      Subscribe <i class="fas fa-bell"></i>
+    <button id="subscribe-button" class="nav-button subscribe-button">
+      <i class="fas fa-bell"></i> Subscribe
     </button>
   `;
 }
 
 export function generateUnsubscribeButtonTemplate() {
   return `
-    <button id="unsubscribe-button" class="btn-ghost unsubscribe-button">
-      Unsubscribe <i class="fas fa-bell-slash"></i>
+    <button id="unsubscribe-button" class="nav-button unsubscribe-button">
+      <i class="fas fa-bell-slash"></i> Unsubscribe
     </button>
   `;
 }
